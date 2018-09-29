@@ -1,0 +1,20 @@
+name 'timber'
+org 'akerl'
+
+source(
+  type: 'git',
+  path: '.'
+)
+
+build do
+  run 'make local'
+end
+
+package(
+  type: 'file',
+  artifacts: []
+)
+
+test do
+  # TODO: add tests
+end
