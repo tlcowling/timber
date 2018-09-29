@@ -1,2 +1,3 @@
 PACKAGE = timber
 NAMESPACE = github.com/akerl
+LIB_ONLY = true

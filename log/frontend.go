@@ -1,6 +1,9 @@
 package log
 
 import (
+	"fmt"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -15,7 +18,7 @@ type event struct {
 }
 
 func newEvent() *event {
-	return &Event{
+	return &event{
 		Time:   time.Now(),
 		Fields: map[string]string{},
 	}
@@ -67,32 +70,51 @@ func levelFromString(str string) level {
 
 type fields map[string]string
 
-type logger struct {
+// Logger carries template event fields and allows for logging events
+type Logger struct {
 	Fields fields
 }
 
 // GetLogger returns a logger with a "name" field populated
-func GetLogger(name string) *logger {
-	return &logger{
+func GetLogger(name string) *Logger {
+	return &Logger{
 		Fields: map[string]string{
 			"name": name,
 		},
 	}
 }
 
-func (l *logger) Info(f fields) {
+// Info logs an event at the INFO level
+func (l *Logger) Info(f fields) {
 	l.log(levelInfo, f)
 }
 
-func (l *logger) Debug(f fields) {
+// Debug logs an event at the DEBUG level
+func (l *Logger) Debug(f fields) {
 	l.log(levelDebug, f)
 }
 
-func (l *logger) Trace(f fields) {
+// Trace logs an event at the TRACE level
+func (l *Logger) Trace(f fields) {
 	l.log(levelTrace, f)
 }
 
-func (l *logger) log(lvl level, f fields) {
+// InfoMsg logs an event at the INFO level with a string message
+func (l *Logger) InfoMsg(msg string) {
+	l.Info(map[string]string{"msg": msg})
+}
+
+// DebugMsg logs an event at the DEBUG level with a string message
+func (l *Logger) DebugMsg(msg string) {
+	l.Debug(map[string]string{"msg": msg})
+}
+
+// TraceMsg logs an event at the TRACE level with a string message
+func (l *Logger) TraceMsg(msg string) {
+	l.Trace(map[string]string{"msg": msg})
+}
+
+func (l *Logger) log(lvl level, f fields) {
 	globalProcessor.log(lvl, l.Fields, f)
 }
 
@@ -100,7 +122,7 @@ type processor struct {
 	Level   level
 	Encoder encoder
 	Writer  writer
-	OnFail  errorHandler
+	Catcher catcher
 }
 
 type encoder interface {
@@ -111,7 +133,7 @@ type writer interface {
 	Write(*string) error
 }
 
-type errorHandler interface {
+type catcher interface {
 	Catch(error)
 }
 
@@ -119,29 +141,31 @@ type stringEncoder struct{}
 
 func (s stringEncoder) Encode(e *event) (*string, error) {
 	var b strings.Builder
-	_, err := b.WriteString(t.Format(time.RFC3339))
+	var res string
+	_, err := b.WriteString(e.Time.Format(time.RFC3339))
 	if err != nil {
-		return "", err
+		return &res, err
 	}
 	for k, v := range e.Fields {
 		_, err := fmt.Fprintf(&b, " %s=%s", k, v)
 		if err != nil {
-			return "", err
+			return &res, err
 		}
 	}
-	return &b.String(), nil
+	res = b.String()
+	return &res, nil
 }
 
 type stderrWriter struct{}
 
 func (s stderrWriter) Write(str *string) error {
-	_, err := os.Stderr.WriteString(string)
+	_, err := os.Stderr.WriteString(*str)
 	return err
 }
 
-type panicHandler struct{}
+type panicCatcher struct{}
 
-func (p panicHandler) Catch(err error) {
+func (p panicCatcher) Catch(err error) {
 	panic(err)
 }
 
@@ -159,7 +183,7 @@ func init() {
 		Level:   envLevel,
 		Encoder: stringEncoder{},
 		Writer:  stderrWriter{},
-		OnFail:  panicHandler{},
+		Catcher: panicCatcher{},
 	}
 }
 
@@ -172,12 +196,12 @@ func (p *processor) log(lvl level, fl ...fields) {
 		e.AddFields(f)
 	}
 	e.AddLevel(lvl)
-	str, err := p.Encoder.Encode(&e)
+	str, err := p.Encoder.Encode(e)
 	if err != nil {
-		p.OnFail(err)
+		p.Catcher.Catch(err)
 	}
 	err = p.Writer.Write(str)
 	if err != nil {
-		p.OnFail(err)
+		p.Catcher.Catch(err)
 	}
 }
