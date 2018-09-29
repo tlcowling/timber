@@ -6,7 +6,7 @@
 // As a package developer, create a Logger object by calling GetLogger with a
 // name that identifies your package.
 //
-//  logger := log.GetLogger("mypackage")
+//  logger := log.NewLogger("mypackage")
 //
 // Now you can emit Info and Debug events. Info should be used for details about
 // the flow and behavior of your package, while Debug contains lower-level info
