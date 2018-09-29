@@ -19,13 +19,13 @@ func NewLogger(name string) *Logger {
 }
 
 // Info logs an event at the INFO level
-func (l *Logger) Info(f map[string]string) {
-	l.log(levels.LevelInfo, f)
+func (l *Logger) Info(fields map[string]string) {
+	l.log(levels.LevelInfo, fields)
 }
 
 // Debug logs an event at the DEBUG level
-func (l *Logger) Debug(f map[string]string) {
-	l.log(levels.LevelDebug, f)
+func (l *Logger) Debug(fields map[string]string) {
+	l.log(levels.LevelDebug, fields)
 }
 
 // InfoMsg logs an event at the INFO level with a string message
@@ -38,6 +38,6 @@ func (l *Logger) DebugMsg(msg string) {
 	l.Debug(map[string]string{"msg": msg})
 }
 
-func (l *Logger) log(lvl levels.Level, f map[string]string) {
-	globalProcessor.log(lvl, l.Fields, f)
+func (l *Logger) log(lvl levels.Level, fields map[string]string) {
+	globalProcessor.log(lvl, l.Fields, fields)
 }
