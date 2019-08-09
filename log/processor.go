@@ -1,8 +1,8 @@
 package log
 
 import (
-	"github.com/akerl/timber/log/events"
-	"github.com/akerl/timber/log/levels"
+	"github.com/akerl/timber/v2/log/events"
+	"github.com/akerl/timber/v2/log/levels"
 )
 
 type processor struct {
@@ -13,18 +13,18 @@ type processor struct {
 }
 
 type encoder interface {
-	Encode(*events.Event) (*string, error)
+	Encode(events.Event) (string, error)
 }
 
 type writer interface {
-	Write(*string) error
+	Write(string) error
 }
 
 type catcher interface {
 	Catch(error)
 }
 
-func (p *processor) log(lvl levels.Level, fl ...map[string]string) {
+func (p processor) log(lvl levels.Level, fl ...map[string]string) {
 	if lvl > p.Level {
 		return
 	}

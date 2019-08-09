@@ -3,7 +3,7 @@ package events
 import (
 	"time"
 
-	"github.com/akerl/timber/log/levels"
+	"github.com/akerl/timber/v2/log/levels"
 )
 
 // Event describes a single log entry
@@ -13,21 +13,21 @@ type Event struct {
 }
 
 // NewEvent creates a new empty Event whose timestamp is Now()
-func NewEvent() *Event {
-	return &Event{
+func NewEvent() Event {
+	return Event{
 		Time:   time.Now(),
 		Fields: map[string]string{},
 	}
 }
 
 // AddFields adds a set of fields to the event
-func (e *Event) AddFields(f map[string]string) {
+func (e Event) AddFields(f map[string]string) {
 	for k, v := range f {
 		e.Fields[k] = v
 	}
 }
 
 // AddLevel adds a log level as a string to the event
-func (e *Event) AddLevel(l levels.Level) {
+func (e Event) AddLevel(l levels.Level) {
 	e.Fields["level"] = l.String()
 }

@@ -5,24 +5,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/akerl/timber/log/events"
+	"github.com/akerl/timber/v2/log/events"
 )
 
 type stringEncoder struct{}
 
-func (s stringEncoder) Encode(e *events.Event) (*string, error) {
-	var b strings.Builder
+func (s stringEncoder) Encode(e events.Event) (string, error) {
+	var b *strings.Builder
 	var res string
 	_, err := b.WriteString(e.Time.Format(time.RFC3339))
 	if err != nil {
-		return &res, err
+		return res, err
 	}
 	for k, v := range e.Fields {
-		_, err := fmt.Fprintf(&b, " %s=%s", k, v)
+		_, err := fmt.Fprintf(b, " %s=%s", k, v)
 		if err != nil {
-			return &res, err
+			return res, err
 		}
 	}
 	res = b.String()
-	return &res, nil
+	return res, nil
 }

@@ -3,7 +3,7 @@ package log
 import (
 	"os"
 
-	"github.com/akerl/timber/log/levels"
+	"github.com/akerl/timber/v2/log/levels"
 )
 
 const (
